@@ -5,6 +5,8 @@ require('dotenv').config();
 const sequelize = require('./config/database');
 const Usuario = require('./models/Usuario');
 const Animal = require('./models/Animal');
+const HistorialMedico = require('./models/HistorialMedico');
+const Vacuna = require('./models/Vacuna');
 const app = express();
 
 app.use(cors());
