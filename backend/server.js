@@ -13,6 +13,7 @@ const SeguimientoPostAdopcion = require('./models/SeguimientoPostAdopcion');
 const Donacion = require('./models/Donacion');
 const Notificacion = require('./models/Notificacion');
 const usuarioRoutes = require('./routes/usuarioRoutes');
+const animalRoutes = require('./routes/animalRoutes');
 const app = express();
 
 app.use(cors());
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
   res.json({ mensaje: 'API Refugio de Animales funcionando' });
 });
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/animales', animalRoutes);
 const PORT = process.env.PORT || 4000;
 
 sequelize.sync()
