@@ -9,6 +9,9 @@ const HistorialMedico = require('./models/HistorialMedico');
 const Vacuna = require('./models/Vacuna');
 const SolicitudAdopcion = require('./models/SolicitudAdopcion');
 const Adopcion = require('./models/Adopcion');
+const SeguimientoPostAdopcion = require('./models/SeguimientoPostAdopcion');
+const Donacion = require('./models/Donacion');
+const Notificacion = require('./models/Notificacion');
 const app = express();
 
 app.use(cors());
