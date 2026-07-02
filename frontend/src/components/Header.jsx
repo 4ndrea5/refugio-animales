@@ -1,4 +1,6 @@
-import { Bell, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const sans = '"Inter", system-ui, sans-serif';
@@ -12,12 +14,19 @@ function saludoPorHora() {
 }
 
 function Header({ notificaciones = 0 }) {
-  const { usuario } = useAuth();
+  const { usuario, logout } = useAuth();
+  const navigate = useNavigate();
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const rolLegible = {
     admin: 'Administradora',
     veterinario: 'Veterinario',
     adoptante: 'Adoptante',
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -31,7 +40,7 @@ function Header({ notificaciones = 0 }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative' }}>
         <div style={{ position: 'relative' }}>
           <Bell size={19} strokeWidth={1.8} color="#4A4A42" />
           {notificaciones > 0 && (
@@ -46,19 +55,49 @@ function Header({ notificaciones = 0 }) {
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#2E7D32',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: '14px', fontWeight: 600, fontFamily: sans,
-          }}>
-            {usuario?.nombre?.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <p style={{ fontSize: '13px', fontWeight: 600, color: '#1F2E22', margin: 0 }}>{usuario?.nombre}</p>
-            <p style={{ fontSize: '12px', color: '#8A8375', margin: 0 }}>{rolLegible[usuario?.rol] || usuario?.rol}</p>
-          </div>
-          <ChevronDown size={15} color="#8A8375" />
+        <div>
+          <button
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            }}
+          >
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#2E7D32',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: '14px', fontWeight: 600, fontFamily: sans,
+            }}>
+              {usuario?.nombre?.charAt(0).toUpperCase()}
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: '13px', fontWeight: 600, color: '#1F2E22', margin: 0 }}>{usuario?.nombre}</p>
+              <p style={{ fontSize: '12px', color: '#8A8375', margin: 0 }}>{rolLegible[usuario?.rol] || usuario?.rol}</p>
+            </div>
+            <ChevronDown size={15} color="#8A8375" />
+          </button>
+
+          {menuAbierto && (
+            <div style={{
+              position: 'absolute', top: '48px', right: 0,
+              backgroundColor: '#FFFFFF', borderRadius: '10px',
+              border: '1px solid #ECE7DB', boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+              minWidth: '160px', overflow: 'hidden', zIndex: 10,
+            }}>
+              <button
+                onClick={handleLogout}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                  padding: '12px 16px', background: 'none', border: 'none',
+                  fontSize: '13px', fontFamily: sans, fontWeight: 500, color: '#A6564F',
+                  cursor: 'pointer', textAlign: 'left',
+                }}
+              >
+                <LogOut size={15} strokeWidth={1.8} />
+                Cerrar sesión
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
