@@ -20,6 +20,7 @@ const solicitudAdopcionRoutes = require('./routes/solicitudAdopcionRoutes');
 const adopcionRoutes = require('./routes/adopcionRoutes');
 const seguimientoRoutes = require('./routes/seguimientoRoutes');
 const donacionRoutes = require('./routes/donacionRoutes');
+const notificacionRoutes = require('./routes/notificacionRoutes');
 const app = express();
 
 app.use(cors());
@@ -36,6 +37,7 @@ app.use('/api/solicitudes', solicitudAdopcionRoutes);
 app.use('/api/adopciones', adopcionRoutes);
 app.use('/api/seguimientos', seguimientoRoutes);
 app.use('/api/donaciones', donacionRoutes);
+app.use('/api/notificaciones', notificacionRoutes);
 const PORT = process.env.PORT || 4000;
 
 sequelize.sync()
