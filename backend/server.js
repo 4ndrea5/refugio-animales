@@ -14,6 +14,8 @@ const Donacion = require('./models/Donacion');
 const Notificacion = require('./models/Notificacion');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const animalRoutes = require('./routes/animalRoutes');
+const historialMedicoRoutes = require('./routes/historialMedicoRoutes');
+const vacunaRoutes = require('./routes/vacunaRoutes');
 const app = express();
 
 app.use(cors());
@@ -24,6 +26,8 @@ app.get('/', (req, res) => {
 });
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/animales', animalRoutes);
+app.use('/api/historial', historialMedicoRoutes);
+app.use('/api/vacunas', vacunaRoutes);
 const PORT = process.env.PORT || 4000;
 
 sequelize.sync()
