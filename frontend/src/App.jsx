@@ -1,8 +1,12 @@
+import { Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+
 function App() {
   return (
-    <div>
-      <h1>Sistema de Gestión de Refugio de Animales</h1>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<h1>Página principal (pronto)</h1>} />
+    </Routes>
   );
 }
 
