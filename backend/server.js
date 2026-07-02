@@ -19,6 +19,7 @@ const vacunaRoutes = require('./routes/vacunaRoutes');
 const solicitudAdopcionRoutes = require('./routes/solicitudAdopcionRoutes');
 const adopcionRoutes = require('./routes/adopcionRoutes');
 const seguimientoRoutes = require('./routes/seguimientoRoutes');
+const donacionRoutes = require('./routes/donacionRoutes');
 const app = express();
 
 app.use(cors());
@@ -34,6 +35,7 @@ app.use('/api/vacunas', vacunaRoutes);
 app.use('/api/solicitudes', solicitudAdopcionRoutes);
 app.use('/api/adopciones', adopcionRoutes);
 app.use('/api/seguimientos', seguimientoRoutes);
+app.use('/api/donaciones', donacionRoutes);
 const PORT = process.env.PORT || 4000;
 
 sequelize.sync()
