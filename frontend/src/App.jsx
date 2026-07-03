@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Animales from './pages/Animales';
 import Adopciones from './pages/Adopciones';
+import Salud from './pages/Salud';
 import RutaProtegida from './components/RutaProtegida';
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
         element={
           <RutaProtegida>
             <Adopciones />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path="/salud"
+        element={
+          <RutaProtegida>
+            <Salud />
           </RutaProtegida>
         }
       />
