@@ -1,25 +1,28 @@
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, PawPrint, Heart, Stethoscope, Utensils,
   Users, HandHeart, BarChart3, Settings,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 const sans = '"Inter", system-ui, sans-serif';
 const serif = '"Fraunces", Georgia, serif';
 
 const menuItems = [
-  { icon: Home, label: 'Centro de control', activo: true },
-  { icon: PawPrint, label: 'Animales' },
-  { icon: Heart, label: 'Adopciones' },
-  { icon: Stethoscope, label: 'Salud' },
-  { icon: Utensils, label: 'Alimentación' },
-  { icon: Users, label: 'Personas' },
-  { icon: HandHeart, label: 'Voluntarios' },
-  { icon: BarChart3, label: 'Reportes' },
-  { icon: Settings, label: 'Configuración' },
+  { icon: Home, label: 'Centro de control', ruta: '/' },
+  { icon: PawPrint, label: 'Animales', ruta: '/animales' },
+  { icon: Heart, label: 'Adopciones', ruta: '/adopciones' },
+  { icon: Stethoscope, label: 'Salud', ruta: '/salud' },
+  { icon: Utensils, label: 'Alimentación', ruta: '/alimentacion' },
+  { icon: Users, label: 'Personas', ruta: '/personas' },
+  { icon: HandHeart, label: 'Voluntarios', ruta: '/voluntarios' },
+  { icon: BarChart3, label: 'Reportes', ruta: '/reportes' },
+  { icon: Settings, label: 'Configuración', ruta: '/configuracion' },
 ];
 
 function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <aside style={{
       width: '280px',
@@ -32,7 +35,6 @@ function Sidebar() {
       fontFamily: sans,
       flexShrink: 0,
     }}>
-      {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '0 8px', marginBottom: '32px' }}>
         <div style={{
           width: '40px', height: '40px', borderRadius: '10px',
@@ -46,27 +48,29 @@ function Sidebar() {
         </span>
       </div>
 
-      {/* Menú */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-        {menuItems.map(({ icon: Icon, label, activo }) => (
-          <button
-            key={label}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '12px',
-              padding: '11px 12px', borderRadius: '9px', border: 'none',
-              backgroundColor: activo ? '#2E7D32' : 'transparent',
-              color: activo ? '#FFFFFF' : '#B9C2B4',
-              fontSize: '14px', fontWeight: 500, fontFamily: 'inherit',
-              cursor: 'pointer', textAlign: 'left', width: '100%',
-            }}
-          >
-            <Icon size={17} strokeWidth={1.8} />
-            {label}
-          </button>
-        ))}
+        {menuItems.map(({ icon: Icon, label, ruta }) => {
+          const activo = location.pathname === ruta;
+          return (
+            <button
+              key={label}
+              onClick={() => navigate(ruta)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '11px 12px', borderRadius: '9px', border: 'none',
+                backgroundColor: activo ? '#2E7D32' : 'transparent',
+                color: activo ? '#FFFFFF' : '#B9C2B4',
+                fontSize: '14px', fontWeight: 500, fontFamily: 'inherit',
+                cursor: 'pointer', textAlign: 'left', width: '100%',
+              }}
+            >
+              <Icon size={17} strokeWidth={1.8} />
+              {label}
+            </button>
+          );
+        })}
       </nav>
 
-      {/* Ilustración + frase */}
       <div style={{ paddingTop: '20px' }}>
         <svg width="90" height="70" viewBox="0 0 90 70" fill="none" style={{ marginBottom: '16px' }}>
           <ellipse cx="45" cy="66" rx="38" ry="3" fill="#0F1A12" opacity="0.4" />
