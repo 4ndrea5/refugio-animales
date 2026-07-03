@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Animales from './pages/Animales';
 import Adopciones from './pages/Adopciones';
 import Salud from './pages/Salud';
+import Donaciones from './pages/Donaciones';
 import RutaProtegida from './components/RutaProtegida';
 
 function App() {
@@ -39,6 +40,14 @@ function App() {
         element={
           <RutaProtegida>
             <Salud />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path="/donaciones"
+        element={
+          <RutaProtegida>
+            <Donaciones />
           </RutaProtegida>
         }
       />

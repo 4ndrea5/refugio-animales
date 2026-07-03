@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, PawPrint, Heart, Stethoscope, Utensils,
-  Users, HandHeart, BarChart3, Settings,
+  Users, HandHeart, BarChart3, Settings, Gift,
 } from 'lucide-react';
 
 const sans = '"Inter", system-ui, sans-serif';
@@ -12,6 +12,7 @@ const menuItems = [
   { icon: PawPrint, label: 'Animales', ruta: '/animales' },
   { icon: Heart, label: 'Adopciones', ruta: '/adopciones' },
   { icon: Stethoscope, label: 'Salud', ruta: '/salud' },
+  { icon: Gift, label: 'Donaciones', ruta: '/donaciones' },
   { icon: Utensils, label: 'Alimentación', ruta: '/alimentacion' },
   { icon: Users, label: 'Personas', ruta: '/personas' },
   { icon: HandHeart, label: 'Voluntarios', ruta: '/voluntarios' },
