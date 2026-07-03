@@ -34,7 +34,7 @@ function App() {
       <Route
         path="/animales"
         element={
-          <RutaProtegida>
+          <RutaProtegida rolesPermitidos={['admin', 'veterinario']}>
             <Animales />
           </RutaProtegida>
         }
@@ -42,7 +42,7 @@ function App() {
       <Route
         path="/adopciones"
         element={
-          <RutaProtegida>
+          <RutaProtegida rolesPermitidos={['admin', 'veterinario']}>
             <Adopciones />
           </RutaProtegida>
         }
@@ -50,7 +50,7 @@ function App() {
       <Route
         path="/salud"
         element={
-          <RutaProtegida>
+          <RutaProtegida rolesPermitidos={['admin', 'veterinario']}>
             <Salud />
           </RutaProtegida>
         }
@@ -58,7 +58,7 @@ function App() {
       <Route
         path="/donaciones"
         element={
-          <RutaProtegida>
+          <RutaProtegida rolesPermitidos={['admin', 'veterinario']}>
             <Donaciones />
           </RutaProtegida>
         }
