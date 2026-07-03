@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Check, X, Heart } from 'lucide-react';
+import { Check, X, Heart, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { useSolicitudesAdmin } from '../hooks/useSolicitudesAdmin';
 import { useAdopcionesAdmin } from '../hooks/useAdopcionesAdmin';
 import { useCambiarEstadoSolicitud } from '../hooks/useCambiarEstadoSolicitud';
+import { useSeguimientosPorAdopcion } from '../hooks/useSeguimientosPorAdopcion';
+import { useCrearSeguimiento } from '../hooks/useCrearSeguimiento';
 
 const sans = '"Inter", system-ui, sans-serif';
 const serif = '"Fraunces", Georgia, serif';
@@ -16,9 +18,151 @@ const panelBase = {
   boxSizing: 'border-box',
 };
 
+const inputStyle = {
+  width: '100%', padding: '10px 12px', fontSize: '14px', fontFamily: sans,
+  border: '1px solid #E4DFD1', borderRadius: '8px', backgroundColor: '#FAF8F3',
+  color: '#1F2E22', boxSizing: 'border-box',
+};
+
+const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 600, color: '#4A4A42', marginBottom: '6px' };
+
 function formatearFecha(fecha) {
   if (!fecha) return '';
   return new Date(fecha).toLocaleDateString('es-BO', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function ModalSeguimiento({ idAdopcion, onClose }) {
+  const crearSeguimiento = useCrearSeguimiento();
+  const [form, setForm] = useState({ estado_animal: '', notas: '', proxima_visita: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    crearSeguimiento.mutate({ ...form, id_adopcion: idAdopcion }, { onSuccess: onClose });
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(31,46,34,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={onClose}>
+      <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', padding: '32px', width: '100%', maxWidth: '420px', fontFamily: sans }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontFamily: serif, fontSize: '20px', fontWeight: 500, color: '#1F2E22', margin: 0 }}>Nuevo seguimiento</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <X size={20} color="#8A8375" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={labelStyle}>Estado del animal</label>
+            <input
+              style={inputStyle}
+              value={form.estado_animal}
+              onChange={(e) => setForm({ ...form, estado_animal: e.target.value })}
+              placeholder="Ej: Sano, adaptándose bien"
+              required
+            />
+          </div>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={labelStyle}>Notas</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '70px', fontFamily: sans }}
+              value={form.notas}
+              onChange={(e) => setForm({ ...form, notas: e.target.value })}
+            />
+          </div>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={labelStyle}>Próxima visita</label>
+            <input
+              type="date"
+              style={inputStyle}
+              value={form.proxima_visita}
+              onChange={(e) => setForm({ ...form, proxima_visita: e.target.value })}
+            />
+          </div>
+          {crearSeguimiento.isError && (
+            <p style={{ color: '#A6564F', fontSize: '13px', marginBottom: '16px' }}>Error al guardar. Intenta de nuevo.</p>
+          )}
+          <button
+            type="submit"
+            disabled={crearSeguimiento.isPending}
+            style={{
+              width: '100%', padding: '12px', fontSize: '14px', fontWeight: 700, fontFamily: sans,
+              backgroundColor: '#356B45', color: '#fff', border: 'none', borderRadius: '9px',
+              cursor: crearSeguimiento.isPending ? 'default' : 'pointer',
+              opacity: crearSeguimiento.isPending ? 0.6 : 1,
+            }}
+          >
+            {crearSeguimiento.isPending ? 'Guardando...' : 'Guardar seguimiento'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function FilaAdopcion({ adopcion, expandido, onToggle, onNuevoSeguimiento }) {
+  const { data: seguimientos, isLoading } = useSeguimientosPorAdopcion(expandido ? adopcion.id_adopcion : null);
+
+  return (
+    <div style={{ borderTop: '1px solid #F0ECE0' }}>
+      <div
+        onClick={onToggle}
+        style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '18px 24px', cursor: 'pointer',
+        }}
+      >
+        <div>
+          <p style={{ fontSize: '14px', fontWeight: 600, color: '#1F2E22', margin: '0 0 2px' }}>
+            {adopcion.Animal?.nombre} adoptado por {adopcion.adoptante?.nombre} {adopcion.adoptante?.apellido}
+          </p>
+          <p style={{ fontSize: '12px', color: '#8A8375', margin: 0 }}>{adopcion.adoptante?.email}</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: '#8A8375' }}>{formatearFecha(adopcion.fecha_adopcion)}</span>
+          {expandido ? <ChevronUp size={16} color="#8A8375" /> : <ChevronDown size={16} color="#8A8375" />}
+        </div>
+      </div>
+
+      {expandido && (
+        <div style={{ padding: '0 24px 20px', backgroundColor: '#FAF8F3' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingTop: '4px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: '#8A8375', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
+              Seguimiento post-adopción
+            </p>
+            <button
+              onClick={(e) => { e.stopPropagation(); onNuevoSeguimiento(adopcion.id_adopcion); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px',
+                fontSize: '12px', fontWeight: 600, fontFamily: sans, backgroundColor: '#356B45',
+                color: '#fff', border: 'none', borderRadius: '7px', cursor: 'pointer',
+              }}
+            >
+              <Plus size={12} /> Registrar visita
+            </button>
+          </div>
+
+          {isLoading && <p style={{ fontSize: '13px', color: '#8A8375' }}>Cargando...</p>}
+          {!isLoading && seguimientos?.length === 0 && (
+            <p style={{ fontSize: '13px', color: '#8A8375' }}>Sin seguimientos registrados aún.</p>
+          )}
+
+          {seguimientos?.map((s) => (
+            <div key={s.id_seguimiento} style={{ padding: '10px 0', borderTop: '1px solid #ECE7DB' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#1F2E22' }}>{s.estado_animal}</span>
+                <span style={{ fontSize: '12px', color: '#8A8375' }}>{formatearFecha(s.fecha_seguimiento)}</span>
+              </div>
+              {s.notas && <p style={{ fontSize: '12px', color: '#4A4A42', margin: '4px 0 0' }}>{s.notas}</p>}
+              {s.proxima_visita && (
+                <p style={{ fontSize: '12px', color: '#C8A76A', margin: '4px 0 0' }}>
+                  Próxima visita: {formatearFecha(s.proxima_visita)}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Adopciones() {
@@ -26,11 +170,17 @@ function Adopciones() {
   const { data: adopciones, isLoading: cargandoAdopciones } = useAdopcionesAdmin();
   const cambiarEstado = useCambiarEstadoSolicitud();
   const [tab, setTab] = useState('pendientes');
+  const [expandidoId, setExpandidoId] = useState(null);
+  const [modalSeguimiento, setModalSeguimiento] = useState(null);
 
   const pendientes = solicitudes?.filter((s) => s.estado === 'pendiente' || s.estado === 'en_revision') || [];
 
   const handleDecision = (id, estado) => {
     cambiarEstado.mutate({ id, estado });
+  };
+
+  const toggleExpandido = (id) => {
+    setExpandidoId(expandidoId === id ? null : id);
   };
 
   return (
@@ -42,7 +192,7 @@ function Adopciones() {
           Adopciones
         </h1>
         <p style={{ fontSize: '14px', color: '#8A8375', margin: '0 0 28px' }}>
-          Revisa solicitudes y consulta el historial de adopciones
+          Revisa solicitudes y da seguimiento a las adopciones concretadas
         </p>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '28px' }}>
@@ -68,7 +218,7 @@ function Adopciones() {
               cursor: 'pointer',
             }}
           >
-            Historial de adopciones
+            Historial y seguimiento
           </button>
         </div>
 
@@ -152,26 +302,22 @@ function Adopciones() {
               <p style={{ padding: '24px', color: '#8A8375' }}>Aún no hay adopciones registradas.</p>
             )}
 
-            {adopciones?.map((a, i) => (
-              <div
+            {adopciones?.map((a) => (
+              <FilaAdopcion
                 key={a.id_adopcion}
-                style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '18px 24px', borderTop: i === 0 ? 'none' : '1px solid #F0ECE0',
-                }}
-              >
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#1F2E22', margin: '0 0 2px' }}>
-                    {a.Animal?.nombre} adoptado por {a.adoptante?.nombre} {a.adoptante?.apellido}
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#8A8375', margin: 0 }}>{a.adoptante?.email}</p>
-                </div>
-                <span style={{ fontSize: '13px', color: '#8A8375' }}>{formatearFecha(a.fecha_adopcion)}</span>
-              </div>
+                adopcion={a}
+                expandido={expandidoId === a.id_adopcion}
+                onToggle={() => toggleExpandido(a.id_adopcion)}
+                onNuevoSeguimiento={(id) => setModalSeguimiento(id)}
+              />
             ))}
           </div>
         )}
       </main>
+
+      {modalSeguimiento && (
+        <ModalSeguimiento idAdopcion={modalSeguimiento} onClose={() => setModalSeguimiento(null)} />
+      )}
     </div>
   );
 }
