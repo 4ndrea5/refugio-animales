@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, PawPrint, Heart, Clock, CheckCircle2, XCircle, X } from 'lucide-react';
+import { LogOut, PawPrint, Heart, Clock, CheckCircle2, XCircle, X, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAnimales } from '../hooks/useAnimales';
 import { useSolicitudesMias } from '../hooks/useSolicitudesMias';
 import { useCrearSolicitud } from '../hooks/useCrearSolicitud';
+import { useNotificaciones } from '../hooks/useNotificaciones';
+import { useMarcarLeida } from '../hooks/useMarcarLeida';
 
 const sans = '"Inter", system-ui, sans-serif';
 const serif = '"Fraunces", Georgia, serif';
@@ -90,8 +92,28 @@ function CatalogoAdoptante() {
   const navigate = useNavigate();
   const { data: animales, isLoading } = useAnimales();
   const { data: misSolicitudes } = useSolicitudesMias();
+  const { data: notificaciones } = useNotificaciones();
+  const marcarLeida = useMarcarLeida();
   const [animalParaAdoptar, setAnimalParaAdoptar] = useState(null);
   const [tab, setTab] = useState('catalogo');
+  const [notisAbiertas, setNotisAbiertas] = useState(false);
+
+  const noLeidas = notificaciones?.filter((n) => !n.leida).length || 0;
+
+  const handleClickNotificacion = (n) => {
+    if (!n.leida) marcarLeida.mutate(n.id_notificacion);
+  };
+
+  const tiempoRelativo = (fecha) => {
+    const diffMs = Date.now() - new Date(fecha).getTime();
+    const minutos = Math.floor(diffMs / 60000);
+    if (minutos < 1) return 'ahora mismo';
+    if (minutos < 60) return `hace ${minutos} min`;
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return `hace ${horas} h`;
+    const dias = Math.floor(horas / 24);
+    return `hace ${dias} d`;
+  };
 
   const disponibles = animales?.filter((a) => a.estado === 'disponible') || [];
 
@@ -117,6 +139,56 @@ function CatalogoAdoptante() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setNotisAbiertas(!notisAbiertas)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, position: 'relative' }}
+            >
+              <Bell size={18} strokeWidth={1.8} color="#F5F5DC" />
+              {noLeidas > 0 && (
+                <span style={{
+                  position: 'absolute', top: '-6px', right: '-6px',
+                  backgroundColor: '#A6564F', color: '#fff', fontSize: '10px', fontWeight: 700,
+                  width: '16px', height: '16px', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {noLeidas}
+                </span>
+              )}
+            </button>
+
+            {notisAbiertas && (
+              <div style={{
+                position: 'absolute', top: '30px', right: 0,
+                backgroundColor: '#FFFFFF', borderRadius: '10px',
+                border: '1px solid #ECE7DB', boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+                width: '290px', maxHeight: '360px', overflowY: 'auto', zIndex: 20,
+              }}>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: '#8A8375', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '14px 16px 8px', margin: 0 }}>
+                  Notificaciones
+                </p>
+                {(!notificaciones || notificaciones.length === 0) && (
+                  <p style={{ fontSize: '13px', color: '#8A8375', padding: '0 16px 16px' }}>Sin notificaciones.</p>
+                )}
+                {notificaciones?.map((n) => (
+                  <div
+                    key={n.id_notificacion}
+                    onClick={() => handleClickNotificacion(n)}
+                    style={{
+                      padding: '10px 16px', borderTop: '1px solid #F0ECE0', cursor: 'pointer',
+                      backgroundColor: n.leida ? 'transparent' : '#FAF8F3',
+                    }}
+                  >
+                    <p style={{ fontSize: '13px', color: '#1F2E22', margin: '0 0 3px', fontWeight: n.leida ? 400 : 600 }}>
+                      {n.mensaje}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#A8A497', margin: 0 }}>{tiempoRelativo(n.createdAt)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <span style={{ fontSize: '13px', color: '#C7CFC3' }}>Hola, {usuario?.nombre}</span>
           <button
             onClick={handleLogout}
