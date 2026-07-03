@@ -2,6 +2,7 @@ const SolicitudAdopcion = require('../models/SolicitudAdopcion');
 const Adopcion = require('../models/Adopcion');
 const Animal = require('../models/Animal');
 const Usuario = require('../models/Usuario');
+const Notificacion = require('../models/Notificacion');
 
 // Listar todas las solicitudes (admin) - con filtro opcional por estado
 const listar = async (req, res) => {
@@ -57,6 +58,19 @@ const crear = async (req, res) => {
     // El animal pasa a "en proceso" mientras se evalúa la solicitud
     await animal.update({ estado: 'en_proceso' });
 
+    // Notificar a todos los administradores
+    const admins = await Usuario.findAll({ where: { rol: 'admin' } });
+    await Promise.all(
+      admins.map((admin) =>
+        Notificacion.create({
+          id_usuario: admin.id_usuario,
+          tipo: 'solicitud_actualizada',
+          mensaje: `Nueva solicitud de adopción para ${animal.nombre}`,
+          link_relacionado: '/adopciones',
+        })
+      )
+    );
+
     res.status(201).json(nuevaSolicitud);
   } catch (error) {
     res.status(500).json({ error: 'Error al crear solicitud', detalle: error.message });
@@ -87,8 +101,22 @@ const cambiarEstado = async (req, res) => {
         id_animal: solicitud.id_animal,
       });
       await animal.update({ estado: 'adoptado' });
+
+      await Notificacion.create({
+        id_usuario: solicitud.id_usuario,
+        tipo: 'solicitud_actualizada',
+        mensaje: `¡Felicidades! Tu solicitud para adoptar a ${animal.nombre} fue aprobada`,
+        link_relacionado: '/',
+      });
     } else if (estado === 'rechazada') {
       await animal.update({ estado: 'disponible' });
+
+      await Notificacion.create({
+        id_usuario: solicitud.id_usuario,
+        tipo: 'solicitud_actualizada',
+        mensaje: `Tu solicitud para adoptar a ${animal.nombre} fue rechazada`,
+        link_relacionado: '/',
+      });
     }
 
     res.json({ mensaje: 'Estado de solicitud actualizado', solicitud });
