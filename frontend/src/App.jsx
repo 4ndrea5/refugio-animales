@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Animales from './pages/Animales';
+import Adopciones from './pages/Adopciones';
 import RutaProtegida from './components/RutaProtegida';
 
 function App() {
@@ -21,6 +22,14 @@ function App() {
         element={
           <RutaProtegida>
             <Animales />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path="/adopciones"
+        element={
+          <RutaProtegida>
+            <Adopciones />
           </RutaProtegida>
         }
       />
