@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotificaciones } from '../hooks/useNotificaciones';
+import { useMarcarLeida } from '../hooks/useMarcarLeida';
 
 const sans = '"Inter", system-ui, sans-serif';
 const serif = '"Fraunces", Georgia, serif';
@@ -13,10 +15,24 @@ function saludoPorHora() {
   return 'Buenas noches';
 }
 
-function Header({ notificaciones = 0 }) {
+function tiempoRelativo(fecha) {
+  const diffMs = Date.now() - new Date(fecha).getTime();
+  const minutos = Math.floor(diffMs / 60000);
+  if (minutos < 1) return 'ahora mismo';
+  if (minutos < 60) return `hace ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `hace ${horas} h`;
+  const dias = Math.floor(horas / 24);
+  return `hace ${dias} d`;
+}
+
+function Header() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [notisAbiertas, setNotisAbiertas] = useState(false);
+  const { data: notificaciones } = useNotificaciones();
+  const marcarLeida = useMarcarLeida();
 
   const rolLegible = {
     admin: 'Administradora',
@@ -24,9 +40,15 @@ function Header({ notificaciones = 0 }) {
     adoptante: 'Adoptante',
   };
 
+  const noLeidas = notificaciones?.filter((n) => !n.leida).length || 0;
+
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleClickNotificacion = (n) => {
+    if (!n.leida) marcarLeida.mutate(n.id_notificacion);
   };
 
   return (
@@ -40,28 +62,61 @@ function Header({ notificaciones = 0 }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         <div style={{ position: 'relative' }}>
-          <Bell size={19} strokeWidth={1.8} color="#4A4A42" />
-          {notificaciones > 0 && (
-            <span style={{
-              position: 'absolute', top: '-6px', right: '-6px',
-              backgroundColor: '#A6564F', color: '#fff', fontSize: '10px', fontWeight: 700,
-              width: '16px', height: '16px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+          <button
+            onClick={() => { setNotisAbiertas(!notisAbiertas); setMenuAbierto(false); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, position: 'relative' }}
+          >
+            <Bell size={19} strokeWidth={1.8} color="#4A4A42" />
+            {noLeidas > 0 && (
+              <span style={{
+                position: 'absolute', top: '-6px', right: '-6px',
+                backgroundColor: '#A6564F', color: '#fff', fontSize: '10px', fontWeight: 700,
+                width: '16px', height: '16px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {noLeidas}
+              </span>
+            )}
+          </button>
+
+          {notisAbiertas && (
+            <div style={{
+              position: 'absolute', top: '32px', right: 0,
+              backgroundColor: '#FFFFFF', borderRadius: '10px',
+              border: '1px solid #ECE7DB', boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+              width: '300px', maxHeight: '360px', overflowY: 'auto', zIndex: 20,
             }}>
-              {notificaciones}
-            </span>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: '#8A8375', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '14px 16px 8px', margin: 0 }}>
+                Notificaciones
+              </p>
+              {(!notificaciones || notificaciones.length === 0) && (
+                <p style={{ fontSize: '13px', color: '#8A8375', padding: '0 16px 16px' }}>Sin notificaciones.</p>
+              )}
+              {notificaciones?.map((n) => (
+                <div
+                  key={n.id_notificacion}
+                  onClick={() => handleClickNotificacion(n)}
+                  style={{
+                    padding: '10px 16px', borderTop: '1px solid #F0ECE0', cursor: 'pointer',
+                    backgroundColor: n.leida ? 'transparent' : '#FAF8F3',
+                  }}
+                >
+                  <p style={{ fontSize: '13px', color: '#1F2E22', margin: '0 0 3px', fontWeight: n.leida ? 400 : 600 }}>
+                    {n.mensaje}
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#A8A497', margin: 0 }}>{tiempoRelativo(n.createdAt)}</p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
         <div>
           <button
-            onClick={() => setMenuAbierto(!menuAbierto)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-            }}
+            onClick={() => { setMenuAbierto(!menuAbierto); setNotisAbiertas(false); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <div style={{
               width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#2E7D32',

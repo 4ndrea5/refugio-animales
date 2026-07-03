@@ -105,7 +105,7 @@ function Dashboard() {
       <Sidebar />
 
       <main style={{ flex: 1, padding: '40px 44px', boxSizing: 'border-box' }}>
-        <Header notificaciones={(solicitudes?.filter((s) => s.estado === 'pendiente').length) || 0} />
+        <Header />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px', marginBottom: '24px' }}>
           <div style={{ ...panelBase, gridColumn: 'span 5', padding: '28px' }}>
