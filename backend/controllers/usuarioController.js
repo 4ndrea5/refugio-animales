@@ -21,7 +21,7 @@ const registrar = async (req, res) => {
       password: passwordEncriptada,
       telefono,
       direccion,
-      rol: rol || 'adoptante',
+      rol: 'adoptante', // el registro público siempre crea adoptantes, nunca admin/veterinario
     });
 
     res.status(201).json({
