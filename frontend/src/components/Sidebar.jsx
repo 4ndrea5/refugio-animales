@@ -3,11 +3,12 @@ import {
   Home, PawPrint, Heart, Stethoscope, Utensils,
   Users, HandHeart, BarChart3, Settings, Gift,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const sans = '"Inter", system-ui, sans-serif';
 const serif = '"Fraunces", Georgia, serif';
 
-const menuItems = [
+const menuAdmin = [
   { icon: Home, label: 'Centro de control', ruta: '/' },
   { icon: PawPrint, label: 'Animales', ruta: '/animales' },
   { icon: Heart, label: 'Adopciones', ruta: '/adopciones' },
@@ -20,9 +21,18 @@ const menuItems = [
   { icon: Settings, label: 'Configuración', ruta: '/configuracion' },
 ];
 
+const menuVeterinario = [
+  { icon: Home, label: 'Centro de control', ruta: '/' },
+  { icon: PawPrint, label: 'Animales', ruta: '/animales' },
+  { icon: Stethoscope, label: 'Salud', ruta: '/salud' },
+];
+
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { usuario } = useAuth();
+
+  const menuItems = usuario?.rol === 'veterinario' ? menuVeterinario : menuAdmin;
 
   return (
     <aside style={{

@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
 import { useAnimales } from '../hooks/useAnimales';
 import { useSolicitudesAdmin } from '../hooks/useSolicitudesAdmin';
 import { useAdopcionesAdmin } from '../hooks/useAdopcionesAdmin';
@@ -32,6 +33,8 @@ function formatearFecha(fecha) {
 }
 
 function Dashboard() {
+  const { usuario } = useAuth();
+  const esVeterinario = usuario?.rol === 'veterinario';
   const { data: animales, isLoading: cargandoAnimales } = useAnimales();
   const { data: solicitudes } = useSolicitudesAdmin();
   const { data: adopciones } = useAdopcionesAdmin();
@@ -39,7 +42,6 @@ function Dashboard() {
   const { data: vacunas } = useVacunasProximas();
 
   const totalAnimales = animales?.length || 0;
-  const disponibles = animales?.filter((a) => a.estado === 'disponible').length || 0;
   const enRefugio = animales?.filter((a) => a.estado !== 'adoptado').length || 0;
   const ocupacionPct = totalAnimales > 0 ? Math.round((enRefugio / totalAnimales) * 100) : 0;
 
@@ -124,17 +126,19 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#F7EFDD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Heart size={17} color="#C8A76A" strokeWidth={1.8} />
+              {!esVeterinario && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#F7EFDD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={17} color="#C8A76A" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: serif, fontSize: '28px', fontWeight: 500, color: '#1F2E22', margin: 0, lineHeight: 1 }}>
+                      {adopcionesDelMes.length}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#8A8375', margin: '2px 0 0' }}>adopciones este mes</p>
+                  </div>
                 </div>
-                <div>
-                  <p style={{ fontFamily: serif, fontSize: '28px', fontWeight: 500, color: '#1F2E22', margin: 0, lineHeight: 1 }}>
-                    {adopcionesDelMes.length}
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#8A8375', margin: '2px 0 0' }}>adopciones este mes</p>
-                </div>
-              </div>
+              )}
             </div>
 
             <div style={{ borderTop: '1px solid #F0ECE0', paddingTop: '18px' }}>
@@ -207,7 +211,7 @@ function Dashboard() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
 
-          <div style={{ ...panelBase, gridColumn: 'span 5', padding: '28px' }}>
+          <div style={{ ...panelBase, gridColumn: esVeterinario ? 'span 6' : 'span 5', padding: '28px' }}>
             <p style={{ ...etiqueta, marginBottom: '20px' }}>Actividad reciente</p>
             {actividad.length === 0 && <p style={{ fontSize: '13px', color: '#8A8375' }}>Sin actividad todavía.</p>}
             <div style={{ position: 'relative', paddingLeft: '20px' }}>
@@ -233,7 +237,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ gridColumn: esVeterinario ? 'span 6' : 'span 3', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ ...panelBase, padding: '24px' }}>
               <p style={{ ...etiqueta, marginBottom: '14px' }}>Próxima vacuna</p>
               {proximaVacuna ? (
@@ -263,61 +267,65 @@ function Dashboard() {
               </button>
             </div>
 
-            <div style={{ ...panelBase, padding: '24px', flex: 1 }}>
-              <p style={{ ...etiqueta, marginBottom: '14px' }}>Últimos ingresos</p>
-              {(!donaciones || donaciones.length === 0) && <p style={{ fontSize: '12px', color: '#8A8375' }}>Sin donaciones aún.</p>}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {donaciones?.slice(0, 3).map((d) => (
-                  <div key={d.id_donacion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#C8A76A' }} />
-                      <span style={{ fontSize: '12px', color: '#4A4A42' }}>
-                        {d.tipo === 'monetaria' ? 'Donación monetaria' : 'Donación en especie'}
-                      </span>
+            {!esVeterinario && (
+              <div style={{ ...panelBase, padding: '24px', flex: 1 }}>
+                <p style={{ ...etiqueta, marginBottom: '14px' }}>Últimos ingresos</p>
+                {(!donaciones || donaciones.length === 0) && <p style={{ fontSize: '12px', color: '#8A8375' }}>Sin donaciones aún.</p>}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {donaciones?.slice(0, 3).map((d) => (
+                    <div key={d.id_donacion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#C8A76A' }} />
+                        <span style={{ fontSize: '12px', color: '#4A4A42' }}>
+                          {d.tipo === 'monetaria' ? 'Donación monetaria' : 'Donación en especie'}
+                        </span>
+                      </div>
+                      {d.monto && <span style={{ fontSize: '12px', fontWeight: 600, color: '#1F2E22' }}>Bs. {d.monto}</span>}
                     </div>
-                    {d.monto && <span style={{ fontSize: '12px', fontWeight: 600, color: '#1F2E22' }}>Bs. {d.monto}</span>}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ ...panelBase, padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
-                <p style={etiqueta}>Adopciones del mes</p>
-                <span style={{ fontFamily: serif, fontSize: '22px', color: '#1F2E22', fontWeight: 500 }}>{adopcionesDelMes.length}</span>
+          {!esVeterinario && (
+            <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ ...panelBase, padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
+                  <p style={etiqueta}>Adopciones del mes</p>
+                  <span style={{ fontFamily: serif, fontSize: '22px', color: '#1F2E22', fontWeight: 500 }}>{adopcionesDelMes.length}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '70px' }}>
+                  {barrasAdopciones.map((b, i) => (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                      <div style={{
+                        width: '100%', borderRadius: '4px',
+                        height: `${(b.cuenta / maxBarra) * 50 + 4}px`,
+                        backgroundColor: b.cuenta > 0 ? '#356B45' : '#EDEAE0',
+                      }} />
+                      <span style={{ fontSize: '10px', color: '#A8A497' }}>{b.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '70px' }}>
-                {barrasAdopciones.map((b, i) => (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <div style={{
-                      width: '100%', borderRadius: '4px',
-                      height: `${(b.cuenta / maxBarra) * 50 + 4}px`,
-                      backgroundColor: b.cuenta > 0 ? '#356B45' : '#EDEAE0',
-                    }} />
-                    <span style={{ fontSize: '10px', color: '#A8A497' }}>{b.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div style={{ ...panelBase, padding: '24px', flex: 1 }}>
-              <p style={{ ...etiqueta, marginBottom: '16px' }}>Accesos rápidos</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                {accesos.map(({ icon: Icon, label }) => (
-                  <button key={label} style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                    padding: '14px 6px', borderRadius: '10px', border: '1px solid #F0ECE0',
-                    backgroundColor: '#FAF8F3', cursor: 'pointer',
-                  }}>
-                    <Icon size={17} color="#356B45" strokeWidth={1.8} />
-                    <span style={{ fontSize: '10.5px', color: '#4A4A42', fontWeight: 500, textAlign: 'center', lineHeight: 1.2 }}>{label}</span>
-                  </button>
-                ))}
+              <div style={{ ...panelBase, padding: '24px', flex: 1 }}>
+                <p style={{ ...etiqueta, marginBottom: '16px' }}>Accesos rápidos</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                  {accesos.map(({ icon: Icon, label }) => (
+                    <button key={label} style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                      padding: '14px 6px', borderRadius: '10px', border: '1px solid #F0ECE0',
+                      backgroundColor: '#FAF8F3', cursor: 'pointer',
+                    }}>
+                      <Icon size={17} color="#356B45" strokeWidth={1.8} />
+                      <span style={{ fontSize: '10.5px', color: '#4A4A42', fontWeight: 500, textAlign: 'center', lineHeight: 1.2 }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

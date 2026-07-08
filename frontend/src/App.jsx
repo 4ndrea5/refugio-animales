@@ -6,6 +6,7 @@ import Animales from './pages/Animales';
 import Adopciones from './pages/Adopciones';
 import Salud from './pages/Salud';
 import Donaciones from './pages/Donaciones';
+import Personas from './pages/Personas';
 import CatalogoAdoptante from './pages/CatalogoAdoptante';
 import RutaProtegida from './components/RutaProtegida';
 import { useAuth } from './context/AuthContext';
@@ -60,6 +61,14 @@ function App() {
         element={
           <RutaProtegida rolesPermitidos={['admin', 'veterinario']}>
             <Donaciones />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path="/personas"
+        element={
+          <RutaProtegida rolesPermitidos={['admin']}>
+            <Personas />
           </RutaProtegida>
         }
       />
